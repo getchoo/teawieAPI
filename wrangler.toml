@@ -1,0 +1,9 @@
+name = "teawie_api"
+main = "src/index.ts"
+compatibility_date = "2023-11-11"
+
+workers_dev = false
+send_metrics = false
+
+[vars]
+URL = "https://api.mydadleft.me"

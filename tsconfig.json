@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"module": "es2022",
+		"target": "es2022",
+		"moduleResolution": "node",
+		"lib": ["es2022"],
+
+		"types": ["@cloudflare/workers-types", "@types/node"],
+		"resolveJsonModule": true,
+
+		"allowJs": true,
+		"checkJs": false,
+		"noEmit": true,
+
+		"isolatedModules": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+
+		"skipLibCheck": true
+	}
+}

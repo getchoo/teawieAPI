@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Node.js
+node_modules/
+dist/
+
+# wranlger
+.dev.vars
+.wrangler/
+
+# IDEs
+.idea/
+.vscode/*
+
+# nix
+.direnv/
+result*
+repl-result-out*
