@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    needs: [lint, format]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: run build
+        run: pnpm build
+
+      - name: upload ./dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+  lint:
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: run lint
+        run: pnpm run lint -f @microsoft/eslint-formatter-sarif -o /tmp/lint.sarif
+        continue-on-error: true
+
+      - name: strip suppressed results
+        run: pnpm dlx @ryanccn/sarif-strip-suppressed /tmp/lint.sarif
+
+      - name: upload results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: /tmp/lint.sarif
+          wait-for-processing: true
+
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: run prettier
+        run: pnpm exec prettier --check .
