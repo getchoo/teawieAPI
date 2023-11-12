@@ -1,0 +1,31 @@
+name: update flake.lock
+
+on:
+  schedule:
+    - cron: "0 0 * * 6"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nixbuild/nix-quick-install-action@v26
+
+      - name: update lockfile
+        uses: DeterminateSystems/update-flake-lock@v20
+        id: update
+        with:
+          token: ${{ github.token }}
+
+      - name: enable auto-merge
+        shell: bash
+        run: gh pr merge --rebase "$PR_ID"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_ID: ${{ steps.update.outputs.pull-request-number }}

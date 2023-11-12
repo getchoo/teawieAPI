@@ -17,3 +17,4 @@ dist/
 .direnv/
 result*
 repl-result-out*
+.pre-commit-config.yaml
