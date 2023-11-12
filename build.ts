@@ -4,20 +4,22 @@ import { constants, copyFile, mkdir, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 
 const distDir = "dist";
+const contentDir = join(distDir, "static");
 const teawieArchiveDir = "Teawie-Archive/teawie-media/Original Teawies";
 
 const checkAndCreate = async (dir: string) => {
 	if (!existsSync(dir)) {
 		await mkdir(dir, { recursive: true });
+	} else {
+		for (const f of await readdir(dir)) {
+			await rm(join(dir, f), { recursive: true, force: true });
+		}
 	}
 };
 
 await checkAndCreate(distDir);
-for (const f of await readdir(distDir)) {
-	await rm(join(distDir, f), { recursive: true, force: true });
-}
-
-await checkAndCreate(join(distDir, "static/teawie"));
+await checkAndCreate(contentDir);
+await checkAndCreate(join(contentDir, "teawie"));
 
 const wies = (await readdir(teawieArchiveDir)).filter((wie) => {
 	const fileExt = wie.split(".").pop();
@@ -25,7 +27,7 @@ const wies = (await readdir(teawieArchiveDir)).filter((wie) => {
 });
 
 for (const f of wies) {
-	await copyFile(join(teawieArchiveDir, f), join(distDir, "static/teawie", f), constants.COPYFILE_FICLONE);
+	await copyFile(join(teawieArchiveDir, f), join(contentDir, "teawie", f), constants.COPYFILE_FICLONE);
 }
 
 const define = {
