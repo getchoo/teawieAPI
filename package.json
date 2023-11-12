@@ -4,11 +4,8 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"dev": "pnpm run \"/dev:.*/\"",
-		"dev:wrangler": "wrangler pages dev dist --live-reload",
-		"dev:esbuild": "tsx watch build.ts",
+		"dev": "pnpm build && wrangler pages dev dist --live-reload",
 		"build": "tsx build.ts",
-		"deploy": "pnpm build && wrangler pages publish dist",
 		"lint": "tsc && eslint .",
 		"fmt": "prettier --write ."
 	},
