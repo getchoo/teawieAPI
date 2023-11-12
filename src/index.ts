@@ -11,7 +11,9 @@ app.use("*", logger());
 app.use("*", prettyJSON());
 
 app.get("/", (c) => {
-	return c.redirect(c.env.REDIRECT_ROOT ?? "https://github.com/getchoo/teawieAPI");
+	return c.redirect(
+		c.env.REDIRECT_ROOT ?? "https://github.com/getchoo/teawieAPI",
+	);
 });
 
 app.get("/static/*", async (c) => {

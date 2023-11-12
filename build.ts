@@ -27,7 +27,11 @@ const wies = (await readdir(teawieArchiveDir)).filter((wie) => {
 });
 
 for (const f of wies) {
-	await copyFile(join(teawieArchiveDir, f), join(contentDir, "teawie", f), constants.COPYFILE_FICLONE);
+	await copyFile(
+		join(teawieArchiveDir, f),
+		join(contentDir, "teawie", f),
+		constants.COPYFILE_FICLONE,
+	);
 }
 
 const define = {
