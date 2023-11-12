@@ -32,6 +32,7 @@ for (const f of wies) {
 
 const define = {
 	WIES: JSON.stringify(wies),
+	WIE_DIR: JSON.stringify("static/teawie"),
 };
 
 const options = {

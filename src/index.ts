@@ -24,7 +24,7 @@ app.get("/list_teawies", zValidator("query", list), async (c) => {
 	return c.json(
 		WIES.slice(0, parseInt(limit ?? "5")).map((wie) => {
 			return {
-				url: `${c.env.URL ?? "https://api.mydadleft.me"}/static/teawie/${wie}`,
+				url: `${c.env.URL ?? "https://api.mydadleft.me"}/${WIE_DIR}/${wie}`,
 			};
 		}),
 	);
@@ -34,7 +34,7 @@ app.get("/random_teawie", (c) => {
 	const wie = WIES[Math.floor(Math.random() * WIES.length)];
 
 	return c.json({
-		url: `${c.env.URL ?? "https://api.mydadleft.me"}/static/${wie}`,
+		url: `${c.env.URL ?? "https://api.mydadleft.me"}/${WIE_DIR}/${wie}`,
 	});
 });
 
