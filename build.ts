@@ -21,19 +21,17 @@ await checkAndCreate(distDir);
 await checkAndCreate(contentDir);
 await checkAndCreate(join(contentDir, "teawie"));
 
-const wies = (await readdir(teawieArchiveDir))
-	.filter((wie) => {
-		const fileExt = wie.split(".").pop();
-		return !["ini", "txt"].includes(fileExt ?? "");
-	})
-	.map((wie) => wie.replace(" ", "%20"));
+const wies = (await readdir(teawieArchiveDir)).filter((wie) => {
+	const fileExt = wie.split(".").pop();
+	return !["ini", "txt"].includes(fileExt ?? "");
+});
 
 for (const f of wies) {
 	await copyFile(join(teawieArchiveDir, f), join(contentDir, "teawie", f), constants.COPYFILE_FICLONE);
 }
 
 const define = {
-	WIES: JSON.stringify(wies),
+	WIES: JSON.stringify(wies.map((wie) => wie.replace(" ", "%20"))),
 	WIE_DIR: JSON.stringify("static/teawie"),
 };
 
