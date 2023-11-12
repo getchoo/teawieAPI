@@ -31,7 +31,7 @@ for (const f of wies) {
 }
 
 const define = {
-	WIES: JSON.stringify(wies.map((wie) => wie.replace(" ", "%20"))),
+	WIES: JSON.stringify(wies.map((wie) => wie.replaceAll(" ", "%20"))),
 	WIE_DIR: JSON.stringify("static/teawie"),
 };
 
