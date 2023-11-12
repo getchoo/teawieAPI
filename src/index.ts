@@ -26,7 +26,7 @@ app.get("/list_teawies", zValidator("query", list), async (c) => {
 	return c.json(
 		WIES.slice(0, parseInt(limit ?? "5")).map((wie) => {
 			return {
-				url: `${c.env.URL ?? "https://api.mydadleft.me"}/${WIE_DIR}/${wie}`,
+				url: new URL(`/${WIE_DIR}/${wie}`, c.req.url).toString(),
 			};
 		}),
 	);
@@ -36,12 +36,10 @@ app.get("/random_teawie", (c) => {
 	const wie = WIES[Math.floor(Math.random() * WIES.length)];
 
 	return c.json({
-		url: `${c.env.URL ?? "https://api.mydadleft.me"}/${WIE_DIR}/${wie}`,
+		url: new URL(`/${WIE_DIR}/${wie}`, c.req.url).toString(),
 	});
 });
 
-app.get("/get_random_teawie", (c) => {
-	return c.redirect(`${c.env.URL ?? "https://api.mydadleft.me"}/random_teawie`);
-});
+app.get("/get_random_teawie", (c) => c.redirect("/random_teawie"));
 
 export default app;
