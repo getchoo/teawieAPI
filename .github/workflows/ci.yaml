@@ -3,11 +3,9 @@ name: CI
 on:
   pull_request:
   workflow_dispatch:
-  workflow_call:
 
 jobs:
   build:
-    needs: [lint, format]
     runs-on: ubuntu-latest
 
     steps:
@@ -30,12 +28,6 @@ jobs:
 
       - name: run build
         run: pnpm build
-
-      - name: upload ./dist
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
 
   lint:
     runs-on: ubuntu-latest

@@ -23,7 +23,7 @@ jobs:
         with:
           token: ${{ github.token }}
 
-      - name: enable auto-merge
+      - name: merge pr
         shell: bash
         run: gh pr merge --rebase "$PR_ID"
         env:
