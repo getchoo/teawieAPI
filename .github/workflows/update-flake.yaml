@@ -1,4 +1,4 @@
-name: update flake.lock
+name: Update flake.lock
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
 
     permissions:
       contents: write
@@ -15,15 +15,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: nixbuild/nix-quick-install-action@v26
 
-      - name: update lockfile
+      - name: Install Nix
+        uses: nixbuild/nix-quick-install-action@v26
+
+      - name: Update lockfile
         uses: DeterminateSystems/update-flake-lock@v20
         id: update
         with:
           token: ${{ github.token }}
 
-      - name: merge pr
+      - name: Merge PR
         shell: bash
         run: gh pr merge --rebase "$PR_ID"
         env:
