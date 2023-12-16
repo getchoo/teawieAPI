@@ -7,7 +7,7 @@ on:
 
 jobs:
   update:
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
 
     permissions:
       contents: write
@@ -19,7 +19,7 @@ jobs:
       - name: Install Nix
         uses: nixbuild/nix-quick-install-action@v26
 
-      - name: Update lockfile
+      - name: Update lockfile & make PR
         uses: DeterminateSystems/update-flake-lock@v20
         id: update
         with:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Merge PR
         shell: bash
-        run: gh pr merge --rebase "$PR_ID"
+        run: gh pr merge --admin --rebase "$PR_ID"
         env:
           GH_TOKEN: ${{ github.token }}
           PR_ID: ${{ steps.update.outputs.pull-request-number }}
