@@ -34,7 +34,7 @@
         pkgs,
         ...
       }: {
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShellNoCC {
           shellHook = ''
             [ ! -d node_modules ] && pnpm install --frozen-lockfile
             ${config.pre-commit.installationScript}
