@@ -24,10 +24,3 @@ jobs:
         id: update
         with:
           token: ${{ github.token }}
-
-      - name: Merge PR
-        shell: bash
-        run: gh pr merge --admin --rebase "$PR_ID"
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_ID: ${{ steps.update.outputs.pull-request-number }}
