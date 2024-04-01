@@ -10,7 +10,7 @@
 		"fmt": "prettier --write ."
 	},
 	"dependencies": {
-		"@hono/zod-validator": "^0.2.0",
+		"@hono/zod-validator": "^0.2.1",
 		"hono": "^4.1.4",
 		"zod": "^3.22.4"
 	},
