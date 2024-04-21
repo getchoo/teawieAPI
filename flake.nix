@@ -1,25 +1,30 @@
 {
   inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        rust-analyzer-src.follows = "";
+      };
     };
 
-    pre-commit = {
-      url = "github:cachix/pre-commit-hooks.nix";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
     };
   };
 
-  outputs = {
-    parts,
-    pre-commit,
-    ...
-  } @ inputs:
-    parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    {
+      self,
+      nixpkgs,
+      fenix,
+      treefmt-nix,
+    }:
+    let
+      inherit (nixpkgs) lib;
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -27,55 +32,78 @@
         "aarch64-darwin"
       ];
 
-      imports = [pre-commit.flakeModule];
+      forAllSystems = lib.genAttrs systems;
+      nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
+      treefmtFor = forAllSystems (system: treefmt-nix.lib.evalModule nixpkgsFor.${system} ./treefmt.nix);
+    in
+    {
+      checks = forAllSystems (system: {
+        treefmt = treefmtFor.${system}.config.build.check self;
+      });
 
-      perSystem = {
-        config,
-        pkgs,
-        ...
-      }: {
-        devShells.default = pkgs.mkShellNoCC {
-          shellHook = ''
-            [ ! -d node_modules ] && pnpm install --frozen-lockfile
-            ${config.pre-commit.installationScript}
-          '';
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+        in
+        {
+          default = pkgs.mkShell {
+            packages = [
+              pkgs.clippy
+              pkgs.rustfmt
+              pkgs.rust-analyzer
 
-          packages = with pkgs; [
-            nodejs_20
-            (nodePackages_latest.pnpm.override {nodejs = nodejs_20;})
+              self.formatter.${system}
+              pkgs.nil
+              pkgs.statix
+            ];
 
-            actionlint
-            editorconfig-checker
+            inputsFrom = [ self.packages.${system}.teawie-api ];
 
-            config.formatter
-            deadnix
-            nil
-            statix
-          ];
-        };
+            env = {
+              RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+            };
+          };
+        }
+      );
 
-        formatter = pkgs.alejandra;
+      formatter = forAllSystems (system: treefmtFor.${system}.config.build.wrapper);
 
-        pre-commit.settings = {
-          hooks = {
-            actionlint.enable = true;
-            editorconfig-checker.enable = true;
+      nixosModules.default = import ./nix/module.nix self;
 
-            # typescript
-            eslint.enable = true;
-            prettier.enable = true;
+      packages = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+          packages' = self.packages.${system};
 
-            # nix
-            ${config.formatter.pname}.enable = true;
-            deadnix.enable = true;
-            nil.enable = true;
-            statix.enable = true;
+          staticFor = pkgs.callPackage ./nix/static.nix {
+            inherit (packages') teawie-api;
+            fenix = fenix.packages.${system};
           };
 
-          settings = {
-            eslint.extensions = "\\.(js|jsx|ts|tsx)$";
-          };
-        };
-      };
+          containerFor =
+            teawie-api:
+            let
+              arch = teawie-api.stdenv.hostPlatform.ubootArch;
+            in
+            pkgs.dockerTools.buildLayeredImage {
+              name = "teawie-api";
+              tag = "latest-${arch}";
+              config.Cmd = [ (lib.getExe teawie-api) ];
+              architecture = arch;
+            };
+        in
+        {
+          container-x86_64 = containerFor packages'.static-x86_64;
+          container-aarch64 = containerFor packages'.static-aarch64;
+
+          static-x86_64 = staticFor "x86_64";
+          static-aarch64 = staticFor "aarch64";
+
+          teawie-api = pkgs.callPackage ./nix/package.nix { };
+          default = self.packages.${pkgs.system}.teawie-api;
+        }
+      );
     };
 }
