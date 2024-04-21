@@ -1,54 +1,54 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    name: Build
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Run build
-        run: pnpm build
+        run: |
+          cargo build --locked --release
 
-  format:
-    runs-on: "ubuntu-latest"
+  format-and-lint:
+    name: Format and lint
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+      - name: Run checks
+        run: |
+          nix flake check --print-build-logs --show-trace
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  release-gate:
+    name: Release gate
+    needs: [build, format-and-lint]
 
-      - name: Run Prettier
-        run: pnpm exec prettier --check .
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exit with error
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

@@ -1,5 +1,6 @@
 {
   "nodes": {
+<<<<<<< HEAD
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -37,6 +38,8 @@
         "type": "github"
       }
     },
+=======
+>>>>>>> 0098c71 (rewrite in rust)
     "nixpkgs": {
       "locked": {
         "lastModified": 1716451822,
@@ -52,6 +55,7 @@
         "type": "indirect"
       }
     },
+<<<<<<< HEAD
     "parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -102,6 +106,11 @@
         "nixpkgs": "nixpkgs",
         "parts": "parts",
         "pre-commit": "pre-commit"
+=======
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+>>>>>>> 0098c71 (rewrite in rust)
       }
     }
   },

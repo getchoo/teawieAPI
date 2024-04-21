@@ -1,0 +1,26 @@
+[package]
+name = "server"
+version = "0.1.0"
+authors = ["Seth <getchoo at tuta dot io>"]
+edition = "2021"
+description = "okay so like basically, it's just a web service for teawie stuff (so cool!!)"
+repository = "https://github.com/getchoo/teawieAPI"
+
+[dependencies]
+axum = { workspace = true, default-features = true }
+dotenvy = "0.15.7"
+teawie_api = { path = "../teawie_api" }
+tokio = { version = "1.37.0", features = ["macros", "net", "signal", "rt-multi-thread"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"
