@@ -6,12 +6,13 @@ on:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    name: Build
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -22,6 +23,11 @@ jobs:
           node-version: 20
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: Activate corepack
+        run: |
+          corepack enable
+          corepack prepare --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -29,26 +35,23 @@ jobs:
       - name: Run build
         run: pnpm build
 
-  format:
-    runs-on: "ubuntu-latest"
+  format-and-lint:
+    name: Format & lint
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v4
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Run Prettier
-        run: pnpm exec prettier --check .
+      - name: Run checks
+        run: |
+          nix flake check \
+            --print-build-logs \
+            --show-trace

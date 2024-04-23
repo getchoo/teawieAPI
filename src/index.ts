@@ -1,9 +1,9 @@
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
-import { zValidator } from "@hono/zod-validator";
-import { list } from "./schemas";
-import { Bindings, Variables } from "./env";
+import { findWies } from "./teawie";
+import type { Bindings, Variables } from "./env";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -16,27 +16,23 @@ app.get("/", (c) => {
 	);
 });
 
-app.get("/static/*", async (c) => {
-	return await c.env.ASSETS.fetch(c.req.raw);
-});
-
-app.get("/list_teawies", zValidator("query", list), async (c) => {
-	const { limit } = c.req.query();
-
-	return c.json(
-		WIES.slice(0, parseInt(limit ?? "5")).map((wie) => {
-			return {
-				url: new URL(`/${WIE_DIR}/${wie}`, c.req.url).toString(),
-			};
-		}),
-	);
-});
-
-app.get("/random_teawie", (c) => {
-	const wie = WIES[Math.floor(Math.random() * WIES.length)];
+app.get("/list_teawies", async (c) => {
+	const wiePaths = await findWies(c.env);
 
 	return c.json({
-		url: new URL(`/${WIE_DIR}/${wie}`, c.req.url).toString(),
+		wies: wiePaths
+	})
+})
+
+app.get("/random_teawie", async (c) => {
+	const wiePaths = await findWies(c.env);
+	const wie = wiePaths.at(Date.now() % wiePaths.length);
+	if (!wie) {
+		throw new HTTPException(500, { message: "Couldn't choose a wie!" })
+	}
+
+	return c.json({
+		url: wie,
 	});
 });
 

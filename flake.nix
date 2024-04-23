@@ -1,81 +1,90 @@
 {
-  inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
-
-    parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
-
-    pre-commit = {
-      url = "github:cachix/pre-commit-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
-    };
-  };
+  inputs.nixpkgs.url = "nixpkgs/nixpkgs-unstable";
 
   outputs = {
-    parts,
-    pre-commit,
-    ...
-  } @ inputs:
-    parts.lib.mkFlake {inherit inputs;} {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
+    self,
+    nixpkgs,
+  }: let
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
 
-      imports = [pre-commit.flakeModule];
+    forAllSystems = fn: nixpkgs.lib.genAttrs systems (system: fn nixpkgs.legacyPackages.${system});
+  in {
+    checks = forAllSystems ({
+      pkgs,
+      lib,
+      ...
+    }: {
+      alejandra = pkgs.runCommand "check-alejandra" {} ''
+        ${lib.getExe pkgs.alejandra} --check ${../.}
+        touch $out
+      '';
 
-      perSystem = {
-        config,
-        pkgs,
-        ...
-      }: {
-        devShells.default = pkgs.mkShellNoCC {
-          shellHook = ''
-            [ ! -d node_modules ] && pnpm install --frozen-lockfile
-            ${config.pre-commit.installationScript}
-          '';
+      actionlint = pkgs.runCommand "check-actionlint" {} ''
+        ${lib.getExe pkgs.actionlint} ${../.github/workflows}/*
+        touch $out
+      '';
 
-          packages = with pkgs; [
-            nodejs_20
-            (nodePackages_latest.pnpm.override {nodejs = nodejs_20;})
+      biome-fmt = pkgs.runCommand "check-biome-fmt" {} ''
+        ${lib.getExe pkgs.biome} format ${../.}/*
+        touch $out
+      '';
 
-            actionlint
-            editorconfig-checker
+      biome-lint = pkgs.runCommand "check-biome-lint" {} ''
+        ${lib.getExe pkgs.biome} lint ${../.}/**/*
+        touch $out
+      '';
 
-            config.formatter
-            deadnix
-            nil
-            statix
-          ];
-        };
+      deadnix = pkgs.runCommand "check-deadnix" {} ''
+        ${lib.getExe pkgs.deadnix} --fail ${../.}
+        touch $out
+      '';
 
-        formatter = pkgs.alejandra;
+      editorconfig = pkgs.runCommand "check-editorconfig" {} ''
+        cd ${../.}
+        ${lib.getExe pkgs.editorconfig-checker} \
+          -exclude '.git|node_modules|dist' .
+        touch $out
+      '';
 
-        pre-commit.settings = {
-          hooks = {
-            actionlint.enable = true;
-            editorconfig-checker.enable = true;
+      statix = pkgs.runCommand "check-statix" {} ''
+        ${lib.getExe pkgs.statix} check ${../.}
+        touch $out
+      '';
+    });
 
-            # typescript
-            eslint.enable = true;
-            prettier.enable = true;
+    devShells = forAllSystems (pkgs: let
+      common = [pkgs.nodejs pkgs.corepack pkgs.wrangler];
+    in {
+      default = pkgs.mkShellNoCC {
+        packages = common;
+      };
+
+      full = pkgs.mkShellNoCC {
+        packages =
+          common
+          ++ [
+            # lsp
+            pkgs.nodePackages.typescript-language-server
+
+            # formatting/lint
+            pkgs.actionlint
+            pkgs.biome
+            pkgs.editorconfig-checker
 
             # nix
-            ${config.formatter.pname}.enable = true;
-            deadnix.enable = true;
-            nil.enable = true;
-            statix.enable = true;
-          };
-
-          settings = {
-            eslint.extensions = "\\.(js|jsx|ts|tsx)$";
-          };
-        };
+            self.formatter.${pkgs.system}
+            pkgs.deadnix
+            pkgs.statix
+            pkgs.nil
+          ];
       };
-    };
+    });
+
+    formatter = forAllSystems (pkgs: pkgs.alejandra);
+  };
 }
