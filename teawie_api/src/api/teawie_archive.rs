@@ -1,10 +1,17 @@
+use crate::router::Cache;
+
 use super::{GitHubClient, HttpClient, HttpClientExt};
 
-use std::{error::Error, fmt::Debug};
+use std::{
+	error::Error,
+	fmt::Debug,
+	sync::{Arc, RwLock},
+	time::Duration,
+};
 
 use futures::future::try_join_all;
 use octocrab::models::repos::Content;
-use tracing::{debug, warn};
+use tracing::{debug, trace, warn};
 
 const REPO_OWNER: &str = "SympathyTea";
 const REPO_NAME: &str = "Teawie-Archive";
@@ -62,13 +69,34 @@ where
 }
 
 #[tracing::instrument]
-pub async fn image_urls(http: &HttpClient) -> Result<Vec<String>, Box<dyn Error + Send + Sync>> {
+pub async fn image_urls(
+	http: &HttpClient,
+	cache: Arc<RwLock<Cache>>,
+) -> Result<Vec<String>, Box<dyn Error + Send + Sync>> {
+	{
+		trace!("Checking for URLs in cache");
+		let lock = cache.read().unwrap();
+		if let Some((age, wies)) = lock.teawie_download_urls() {
+			if age.elapsed() < Duration::from_secs(60 * 60) {
+				trace!("Found!");
+				return Ok(wies);
+			}
+			debug!("Cache is out of date! Refreshing");
+		}
+	}
+
 	let futures = try_join_all(TEAWIE_SUBDIRS.iter().map(|&dir| fetch_contents(http, dir))).await?;
 	let directories = futures.iter().flatten();
 	debug!("Fetched Teawie subdirectories!");
 
-	let images = find_image_urls(directories).collect();
+	let images: Vec<String> = find_image_urls(directories).collect();
 	debug!("Resolved image URLs");
+
+	{
+		trace!("Caching new URLs");
+		let mut lock = cache.write().unwrap();
+		lock.cache_teawie_download_urls(images.clone());
+	}
 
 	Ok(images)
 }

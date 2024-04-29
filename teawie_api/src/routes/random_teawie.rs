@@ -19,14 +19,15 @@ struct RandomTeawie {
 #[debug_handler]
 pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
 	trace!("Attempting to get teawie image URLs");
-	let wies = match teawie_archive::image_urls(&state.http_client).await {
+	let wies = match teawie_archive::image_urls(&state.http_client, state.cache).await {
 		Ok(wies) => wies,
 		Err(why) => {
-			error!("Couldn't get teawie image urls! {why:#?}");
+			let msg = format!("Couldn't fetch teawies!\n{why:#?}");
+			error!(msg);
 			return (
 				StatusCode::INTERNAL_SERVER_ERROR,
 				Json(RandomTeawie {
-					error: Some("Couldn't fetch wies from GitHub!".to_string()),
+					error: Some(msg),
 					..Default::default()
 				}),
 			);
