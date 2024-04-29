@@ -7,7 +7,7 @@ description = "okay so like basically, it's just a web service for teawie stuff 
 repository = "https://github.com/getchoo/teawieAPI"
 
 [dependencies]
-axum = { workspace = true, default-features = true }
+axum = { workspace = true }
 dotenvy = "0.15.7"
 teawie_api = { path = "../teawie_api" }
 tokio = { version = "1.37.0", features = ["macros", "net", "signal", "rt-multi-thread"] }

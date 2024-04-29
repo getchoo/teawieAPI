@@ -6,19 +6,6 @@ members = [
 ]
 
 [workspace.dependencies]
-axum = { version = "0.7.5", default-features = false, features = [
-	"form",
-	"http1",
-	"http2",
-	"json",
-	"macros",
-	"matched-path",
-	"original-uri",
-	"query",
-	"tower-log",
-	"tracing"
-] }
-getrandom = "0.2.14"
-time = "0.3.36"
-tracing = { version = "0.1.40", features = ["log"] }
+axum = { version = "0.7.5", features = ["json", "macros"] }
+tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "time"] }

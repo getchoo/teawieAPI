@@ -3,16 +3,15 @@ use crate::api::teawie_archive;
 use super::AppState;
 
 use axum::{debug_handler, extract::State, http::StatusCode, response::IntoResponse, Json};
-use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info, trace};
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
-struct RandomTeawie {
+struct ListTeawie {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub error: Option<String>,
 	#[serde(skip_serializing_if = "Option::is_none")]
-	pub url: Option<String>,
+	pub wies: Option<Vec<String>>,
 }
 
 #[tracing::instrument]
@@ -26,7 +25,7 @@ pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
 			error!(msg);
 			return (
 				StatusCode::INTERNAL_SERVER_ERROR,
-				Json(RandomTeawie {
+				Json(ListTeawie {
 					error: Some(msg),
 					..Default::default()
 				}),
@@ -35,15 +34,10 @@ pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
 	};
 	info!("Received teawies!");
 
-	trace!("Choosing a random wie");
-	let mut rng = rand::thread_rng();
-	let url = wies.choose(&mut rng).cloned();
-	info!("Finished choosing a random teawie");
-
 	(
 		StatusCode::OK,
-		Json(RandomTeawie {
-			url,
+		Json(ListTeawie {
+			wies: Some(wies),
 			..Default::default()
 		}),
 	)
