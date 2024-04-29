@@ -1,9 +1,16 @@
 {
-  inputs.nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+  inputs = {
+    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
   outputs = {
     self,
     nixpkgs,
+    fenix,
   }: let
     systems = [
       "x86_64-linux"
@@ -90,7 +97,35 @@
 
     nixosModules.default = import ./nix/module.nix self;
 
-    packages = forAllSystems (pkgs: {
+    packages = forAllSystems ({
+      lib,
+      pkgs,
+      ...
+    }: let
+      packages = self.packages.${pkgs.system};
+      staticFor = arch:
+        pkgs.callPackage ./nix/static.nix {
+          inherit (packages) teawieapi;
+          inherit arch;
+          fenix = fenix.packages.${pkgs.system};
+        };
+
+      containerFor = teawieapi: let
+        arch = teawieapi.stdenv.hostPlatform.ubootArch;
+      in
+        pkgs.dockerTools.buildLayeredImage {
+          name = "teawieapi";
+          tag = "latest-${arch}";
+          config.Cmd = [(lib.getExe teawieapi)];
+          architecture = arch;
+        };
+    in {
+      container-x86_64 = containerFor packages.static-x86_64;
+      container-aarch64 = containerFor packages.static-aarch64;
+
+      static-x86_64 = staticFor "x86_64";
+      static-aarch64 = staticFor "aarch64";
+
       teawieapi = pkgs.callPackage ./nix {inherit self;};
       default = self.packages.${pkgs.system}.teawieapi;
     });

@@ -2,10 +2,12 @@
   lib,
   rustPlatform,
   self,
+  lto ? true,
+  optimizeSize ? false,
 }:
 rustPlatform.buildRustPackage {
   pname = "teawie-api";
-  version = self.shortRev or self.dirtyShortRev or "unknown";
+  version = (lib.importTOML ../teawie_api/Cargo.toml).package.version + "-" + self.shortRev or self.dirtyShortRev or "unknown";
 
   src = lib.fileset.toSource {
     root = ../.;
@@ -15,6 +17,23 @@ rustPlatform.buildRustPackage {
   cargoLock = {
     lockFile = ../Cargo.lock;
   };
+
+  env = let
+    toRustFlags = lib.mapAttrs' (
+      name:
+        lib.nameValuePair
+        "CARGO_BUILD_RELEASE_${lib.toUpper (builtins.replaceStrings ["-"] ["_"] name)}"
+    );
+  in
+    lib.optionalAttrs lto (toRustFlags {
+      lto = "thin";
+    })
+    // lib.optionalAttrs optimizeSize (toRustFlags {
+      codegen-units = 1;
+      opt-level = "s";
+      panic = "abort";
+      strip = "symbols";
+    });
 
   meta = with lib; {
     mainProgram = "server";
