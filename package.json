@@ -26,7 +26,7 @@
 		"prettier": "^3.2.5",
 		"tsx": "^4.9.3",
 		"typescript": "^5.4.5",
-		"wrangler": "^3.52.0"
+		"wrangler": "^3.53.1"
 	},
 	"packageManager": "pnpm@8.8.0",
 	"eslintConfig": {
