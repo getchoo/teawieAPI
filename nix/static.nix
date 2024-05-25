@@ -5,26 +5,30 @@
   fenix,
   pkgsCross,
 }: let
-  crossTargets = with pkgsCross; {
+  crossTargetFor = with pkgsCross; {
     x86_64 = musl64.pkgsStatic;
     aarch64 = aarch64-multiplatform.pkgsStatic;
   };
 
-  rustStdFor = pkgs: fenix.targets.${pkgs.stdenv.hostPlatform.rust.rustcTarget}.stable.rust-std;
-  toolchain = with fenix;
-    combine (lib.flatten [
-      stable.cargo
-      stable.rustc
-      (lib.mapAttrsToList (lib.const rustStdFor) crossTargets)
-    ]);
+  rustcTargetFor = lib.mapAttrs (lib.const (pkgs: pkgs.stdenv.hostPlatform.rustcTarget)) crossTargetFor;
+  rustStdFor = lib.mapAttrs (lib.const (rustcTarget: fenix.targets.${rustcTarget}.stable.rust-std)) rustcTargetFor;
 
-  rustPlatformFor = pkgs:
-    pkgs.makeRustPlatform (
-      lib.genAttrs ["cargo" "rustc"] (lib.const toolchain)
+  toolchain = with fenix;
+    combine (
+      [stable.cargo stable.rustc]
+      ++ lib.attrValues rustStdFor
     );
-  crossPlatforms = lib.mapAttrs (lib.const rustPlatformFor) crossTargets;
+
+  crossPlatformFor =
+    lib.mapAttrs (
+      lib.const (pkgs:
+        pkgs.makeRustPlatform (
+          lib.genAttrs ["cargo" "rustc"] (lib.const toolchain)
+        ))
+    )
+    crossTargetFor;
 in
   teawieapi.override {
-    rustPlatform = crossPlatforms.${arch};
+    rustPlatform = crossPlatformFor.${arch};
     optimizeSize = true;
   }
