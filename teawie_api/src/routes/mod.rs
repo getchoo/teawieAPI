@@ -7,7 +7,7 @@ mod not_found;
 mod random_teawie;
 mod root;
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 pub fn add(router: Router<AppState>) -> Router<AppState> {
 	router
 		.route("/", get(root::handle))

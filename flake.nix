@@ -3,14 +3,19 @@
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     fenix = {
       url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        rust-analyzer-src.follows = "";
+      };
     };
+    flake-checks.url = "github:getchoo/flake-checks";
   };
 
   outputs = {
     self,
     nixpkgs,
     fenix,
+    flake-checks,
   }: let
     systems = [
       "x86_64-linux"
@@ -25,39 +30,21 @@
       pkgs,
       lib,
       ...
-    }: let
-      formatter = self.formatter.${pkgs.system};
-    in {
-      deadnix = pkgs.runCommand "check-deadnix" {} ''
-        ${lib.getExe pkgs.deadnix} --fail ${./.}
-        touch $out
-      '';
-
-      editorconfig = pkgs.runCommand "check-editorconfig" {} ''
-        cd ${./.}
-        ${lib.getExe pkgs.editorconfig-checker} \
-          -exclude '.git|target' .
-        touch $out
-      '';
-
-      "${formatter.pname}" = pkgs.runCommand "check-${formatter.pname}" {} ''
-        ${lib.getExe formatter} --check ${./.}
-        touch $out
-      '';
-
-      rustfmt =
-        pkgs.runCommand "check-rustfmt" {
-          nativeBuildInputs = [pkgs.cargo pkgs.rustfmt];
-        } ''
-          cd ${./.}
-          cargo fmt --check
-          touch $out
-        '';
-
-      statix = pkgs.runCommand "check-statix" {} ''
-        ${lib.getExe pkgs.statix} check ${./.}
-        touch $out
-      '';
+    }: {
+      inherit
+        (flake-checks.lib.mkChecks {
+          inherit pkgs;
+          root = lib.fileset.toSource {
+            root = ./.;
+            fileset = lib.fileset.gitTracked ./.;
+          };
+        })
+        alejandra
+        deadnix
+        editorconfig
+        rustfmt
+        statix
+        ;
     });
 
     devShells = forAllSystems (pkgs: let
@@ -126,7 +113,7 @@
       static-x86_64 = staticFor "x86_64";
       static-aarch64 = staticFor "aarch64";
 
-      teawieapi = pkgs.callPackage ./nix {inherit self;};
+      teawieapi = pkgs.callPackage ./nix/package.nix {inherit self;};
       default = self.packages.${pkgs.system}.teawieapi;
     });
   };

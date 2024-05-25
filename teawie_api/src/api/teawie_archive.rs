@@ -11,7 +11,9 @@ use std::{
 
 use futures::future::try_join_all;
 use octocrab::models::repos::Content;
-use tracing::{debug, trace, warn};
+use tracing::{debug, instrument, trace, warn};
+
+const CACHE_TTL_SECS: u64 = 60 * 60; // 1 hour
 
 const REPO_OWNER: &str = "SympathyTea";
 const REPO_NAME: &str = "Teawie-Archive";
@@ -27,7 +29,7 @@ const TEAWIE_SUBDIRS: [&str; 4] = [
 
 const IMAGE_EXTENSIONS: [&str; 6] = ["gif", "jpg", "jpeg", "png", "svg", "webp"];
 
-#[tracing::instrument]
+#[instrument(skip(http_github))]
 async fn fetch_contents<T>(
 	http_github: &T,
 	path: &str,
@@ -36,7 +38,7 @@ where
 	T: HttpClientExt + GitHubClient + Debug,
 {
 	let url = format!("https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}");
-	let content_items: Vec<Content> = if let Some(token) = http_github.token().ok() {
+	let content_items: Vec<Content> = if let Some(token) = http_github.token_from_env().ok() {
 		http_github
 			.get_authenticated_request(&token, &url)
 			.await?
@@ -50,7 +52,6 @@ where
 	Ok(content_items)
 }
 
-#[tracing::instrument]
 fn find_image_urls<'a, T>(contents: T) -> impl Iterator<Item = String> + 'a
 where
 	T: Iterator<Item = &'a Content> + 'a + Debug,
@@ -68,7 +69,7 @@ where
 	})
 }
 
-#[tracing::instrument]
+#[instrument(skip_all)]
 pub async fn image_urls(
 	http: &HttpClient,
 	cache: Arc<RwLock<Cache>>,
@@ -77,7 +78,7 @@ pub async fn image_urls(
 		trace!("Checking for URLs in cache");
 		let lock = cache.read().unwrap();
 		if let Some((age, wies)) = lock.teawie_download_urls() {
-			if age.elapsed() < Duration::from_secs(60 * 60) {
+			if age.elapsed() < Duration::from_secs(CACHE_TTL_SECS) {
 				trace!("Found!");
 				return Ok(wies);
 			}

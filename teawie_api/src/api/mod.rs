@@ -14,7 +14,7 @@ pub trait HttpClientExt {
 }
 
 pub trait GitHubClient {
-	fn token(&self) -> Result<String, VarError>;
+	fn token_from_env(&self) -> Result<String, VarError>;
 	async fn get_authenticated_request(
 		&self,
 		token: &str,
@@ -23,7 +23,6 @@ pub trait GitHubClient {
 }
 
 impl HttpClientExt for HttpClient {
-	#[instrument]
 	fn default() -> Self {
 		reqwest::ClientBuilder::new()
 			.user_agent(&format!(
@@ -34,7 +33,7 @@ impl HttpClientExt for HttpClient {
 			.unwrap()
 	}
 
-	#[instrument]
+	#[instrument(skip(self))]
 	async fn get_request(&self, url: &str) -> Result<Response, reqwest::Error> {
 		trace!("Making request to {url}");
 		let resp = self.get(url).send().await?;
@@ -45,11 +44,11 @@ impl HttpClientExt for HttpClient {
 }
 
 impl GitHubClient for HttpClient {
-	#[instrument]
-	fn token(&self) -> Result<String, VarError> {
-		std::env::var("GH_TOKEN")
+	fn token_from_env(&self) -> Result<String, VarError> {
+		std::env::var("GITHUB_TOKEN")
 	}
 
+	#[instrument(skip(self, token))]
 	async fn get_authenticated_request(
 		&self,
 		token: &str,

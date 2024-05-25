@@ -6,7 +6,7 @@
   optimizeSize ? false,
 }:
 rustPlatform.buildRustPackage {
-  pname = "teawie-api";
+  pname = "teawieapi";
   version = (lib.importTOML ../teawie_api/Cargo.toml).package.version + "-" + self.shortRev or self.dirtyShortRev or "unknown";
 
   src = lib.fileset.toSource {
@@ -35,11 +35,11 @@ rustPlatform.buildRustPackage {
       strip = "symbols";
     });
 
-  meta = with lib; {
-    mainProgram = "server";
+  meta = {
     description = "okay so like basically, it's just a web service for teawie stuff (so cool!!)";
     homepage = "https://github.com/getchoo/teawieAPI";
-    license = licenses.mit;
-    maintainers = with maintainers; [getchoo];
+    mainProgram = "server";
+    license = lib.licenses.mit;
+    maintainers = with lib.maintainers; [getchoo];
   };
 }

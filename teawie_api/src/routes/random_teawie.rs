@@ -15,7 +15,7 @@ struct RandomTeawie {
 	pub url: Option<String>,
 }
 
-#[tracing::instrument]
+#[tracing::instrument(skip_all)]
 #[debug_handler]
 pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
 	trace!("Attempting to get teawie image URLs");
