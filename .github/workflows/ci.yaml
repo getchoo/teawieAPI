@@ -3,7 +3,19 @@ name: CI
 on:
   push:
     branches: [main]
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
   pull_request:
+    paths:
+      - "**.nix"
+      - "flake.lock"
+      - "**.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
   workflow_dispatch:
 
 jobs:
@@ -43,7 +55,7 @@ jobs:
           nix flake check --print-build-logs --show-trace
 
   release-gate:
-    name: Release gate
+    name: CI Release gate
     needs: [build, format-and-lint]
 
     runs-on: ubuntu-latest
