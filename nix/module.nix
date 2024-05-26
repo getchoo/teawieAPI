@@ -5,50 +5,62 @@ self: {
   ...
 }: let
   cfg = config.services.teawieapi;
+
+  inherit
+    (lib)
+    getExe
+    literalExpression
+    mkEnableOption
+    mkIf
+    mkOption
+    mkPackageOption
+    types
+    ;
+
   inherit (pkgs.stdenv.hostPlatform) system;
 in {
   options.services.teawieapi = {
-    enable = lib.mkEnableOption "teawieapi";
-    package = lib.mkPackageOption (
+    enable = mkEnableOption "teawieapi";
+    package = mkPackageOption (
       self.packages.${system} or (throw "${system} is not supported!")
     ) "teawieapi" {};
 
     listen = {
-      address = lib.mkOption {
-        type = lib.types.str;
+      address = mkOption {
+        type = types.str;
         default = "127.0.0.1";
         example = "::";
         description = "IP address to listen on";
       };
 
-      port = lib.mkOption {
-        type = lib.types.port;
+      port = mkOption {
+        type = types.port;
         default = 7777;
         example = "6969";
         description = "TCP port that will be used to accept client connections";
       };
     };
 
-    environmentFile = lib.mkOption {
+    environmentFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      example = literalExpression ''
+        "/run/agenix.d/1/teawieAPI"
+      '';
       description = ''
         Environment file as defined in {manpage}`systemd.exec(5)`
-      '';
-      type = lib.types.nullOr lib.types.path;
-      default = null;
-      example = lib.literalExpression ''
-        "/run/agenix.d/1/teawieAPI"
       '';
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = mkIf cfg.enable {
     systemd.services."teawieapi" = {
       enable = true;
       wantedBy = ["multi-user.target"];
       after = ["network.target"];
 
       script = ''
-        ${lib.getExe cfg.package}
+        ${getExe cfg.package}
       '';
 
       environment = {
@@ -59,7 +71,7 @@ in {
         Type = "simple";
         Restart = "always";
 
-        EnvironmentFile = lib.mkIf (cfg.environmentFile != null) cfg.environmentFile;
+        EnvironmentFile = mkIf (cfg.environmentFile != null) cfg.environmentFile;
 
         # hardening
         DynamicUser = true;
