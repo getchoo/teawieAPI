@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 
 use axum::response::{IntoResponse, Redirect};
-use tracing::trace;
+use tracing::debug;
 
 #[tracing::instrument(skip_all)]
 pub async fn handle() -> impl IntoResponse {
@@ -10,6 +10,6 @@ pub async fn handle() -> impl IntoResponse {
 		option_env!("REDIRECT_URL").unwrap_or("https://github.com/getchoo/teawieAPI")
 	});
 
-	trace!("Redirecting to {url}");
+	debug!("Redirecting to {url}");
 	Redirect::to(url)
 }

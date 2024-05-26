@@ -27,9 +27,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 fn init_tracing() {
 	let fmt_layer = tracing_subscriber::fmt::layer().pretty();
-	let env_filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-		"teawie_api=trace,server=trace,tower_http=debug,axum=trace,warn".into()
-	});
+	let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+		.unwrap_or_else(|_| "teawie_api=info,server=info,tower_http=debug,axum=trace,warn".into());
 
 	tracing_subscriber::registry()
 		.with(fmt_layer)
@@ -67,7 +66,7 @@ async fn shutdown_signal() {
 	let terminate = std::future::pending::<()>();
 
 	tokio::select! {
-		_ = ctrl_c => {},
-		_ = terminate => {},
+		() = ctrl_c => {},
+		() = terminate => {},
 	}
 }

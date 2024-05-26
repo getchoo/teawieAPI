@@ -11,7 +11,7 @@ use std::{
 
 use futures::future::try_join_all;
 use octocrab::models::repos::Content;
-use tracing::{debug, instrument, trace, warn};
+use tracing::{instrument, trace, warn};
 
 const CACHE_TTL_SECS: u64 = 60 * 60; // 1 hour
 
@@ -29,7 +29,6 @@ const TEAWIE_SUBDIRS: [&str; 4] = [
 
 const IMAGE_EXTENSIONS: [&str; 6] = ["gif", "jpg", "jpeg", "png", "svg", "webp"];
 
-#[instrument(skip(http_github))]
 async fn fetch_contents<T>(
 	http_github: &T,
 	path: &str,
@@ -38,7 +37,7 @@ where
 	T: HttpClientExt + GitHubClient + Debug,
 {
 	let url = format!("https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}");
-	let content_items: Vec<Content> = if let Some(token) = http_github.token_from_env().ok() {
+	let content_items: Vec<Content> = if let Ok(token) = http_github.token_from_env() {
 		http_github
 			.get_authenticated_request(&token, &url)
 			.await?
@@ -82,21 +81,22 @@ pub async fn image_urls(
 				trace!("Found!");
 				return Ok(wies);
 			}
-			debug!("Cache is out of date! Refreshing");
 		}
 	}
+	warn!("Teawie image URL cache is out of date! Refreshing");
 
 	let futures = try_join_all(TEAWIE_SUBDIRS.iter().map(|&dir| fetch_contents(http, dir))).await?;
 	let directories = futures.iter().flatten();
-	debug!("Fetched Teawie subdirectories!");
+	trace!("Fetched Teawie subdirectories!");
 
 	let images: Vec<String> = find_image_urls(directories).collect();
-	debug!("Resolved image URLs");
+	trace!("Resolved image URLs");
 
 	{
 		trace!("Caching new URLs");
 		let mut lock = cache.write().unwrap();
 		lock.cache_teawie_download_urls(images.clone());
+		trace!("Cached!");
 	}
 
 	Ok(images)

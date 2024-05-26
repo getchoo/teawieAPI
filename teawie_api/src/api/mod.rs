@@ -25,7 +25,7 @@ pub trait GitHubClient {
 impl HttpClientExt for HttpClient {
 	fn default() -> Self {
 		reqwest::ClientBuilder::new()
-			.user_agent(&format!(
+			.user_agent(format!(
 				"teawie-api/{}",
 				option_env!("CARGO_PKG_VERSION").unwrap_or("development")
 			))

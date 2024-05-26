@@ -5,10 +5,10 @@ use std::sync::{Arc, RwLock};
 use axum::Router;
 use tracing::trace;
 
+mod app_state;
 mod middleware;
-mod state;
 
-pub use state::*;
+pub use app_state::*;
 
 #[tracing::instrument]
 pub fn router() -> Router {
