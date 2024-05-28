@@ -1,4 +1,4 @@
-use crate::api::HttpClient;
+use crate::http::Client;
 
 use std::{
 	sync::{Arc, RwLock},
@@ -28,5 +28,5 @@ impl Cache {
 #[derive(Clone, Debug)]
 pub struct AppState {
 	pub cache: Arc<RwLock<Cache>>,
-	pub http_client: HttpClient,
+	pub http_client: Client,
 }

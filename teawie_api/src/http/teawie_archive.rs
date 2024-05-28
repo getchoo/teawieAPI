@@ -1,6 +1,6 @@
 use crate::router::Cache;
 
-use super::{GitHubClient, HttpClient, HttpClientExt};
+use super::{Client, GitHubClient, HttpClientExt};
 
 use std::{
 	error::Error,
@@ -14,6 +14,8 @@ use octocrab::models::repos::Content;
 use tracing::{instrument, trace, warn};
 
 const CACHE_TTL_SECS: u64 = 60 * 60; // 1 hour
+
+const GITHUB_API: &str = "https://api.github.com";
 
 const REPO_OWNER: &str = "SympathyTea";
 const REPO_NAME: &str = "Teawie-Archive";
@@ -36,7 +38,7 @@ async fn fetch_contents<T>(
 where
 	T: HttpClientExt + GitHubClient + Debug,
 {
-	let url = format!("https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}");
+	let url = format!("{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}");
 	let content_items: Vec<Content> = if let Ok(token) = http_github.token_from_env() {
 		http_github
 			.get_authenticated_request(&token, &url)
@@ -70,7 +72,7 @@ where
 
 #[instrument(skip_all)]
 pub async fn image_urls(
-	http: &HttpClient,
+	http: &Client,
 	cache: Arc<RwLock<Cache>>,
 ) -> Result<Vec<String>, Box<dyn Error + Send + Sync>> {
 	{

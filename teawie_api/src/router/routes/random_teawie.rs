@@ -1,14 +1,17 @@
-use crate::{api::teawie_archive, ListTeawie};
+use crate::{http::teawie_archive, RandomTeawie};
 
 use super::AppState;
 
 use axum::{debug_handler, extract::State, http::StatusCode, response::IntoResponse, Json};
-use tracing::{debug, error};
+use rand::seq::SliceRandom;
+use tracing::{debug, error, trace};
 
 #[tracing::instrument(skip_all)]
 #[debug_handler]
 pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
-	debug!("Attempting to get teawie image URLs");
+	debug!("Getting a random teawie");
+
+	trace!("Attempting to get teawie image URLs");
 	let wies = match teawie_archive::image_urls(&state.http_client, state.cache).await {
 		Ok(wies) => wies,
 		Err(why) => {
@@ -16,19 +19,24 @@ pub async fn handle(State(state): State<AppState>) -> impl IntoResponse {
 			error!(msg);
 			return (
 				StatusCode::INTERNAL_SERVER_ERROR,
-				Json(ListTeawie {
+				Json(RandomTeawie {
 					error: Some(msg),
 					..Default::default()
 				}),
 			);
 		}
 	};
-	debug!("Received teawies!");
+	trace!("Received teawies!");
+
+	trace!("Choosing a random wie");
+	let mut rng = rand::thread_rng();
+	let url = wies.choose(&mut rng).cloned();
+	trace!("Found a random teawie!");
 
 	(
 		StatusCode::OK,
-		Json(ListTeawie {
-			wies: Some(wies),
+		Json(RandomTeawie {
+			url,
 			..Default::default()
 		}),
 	)

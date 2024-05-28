@@ -1,15 +1,16 @@
-use std::{env::VarError, error::Error};
+use std::{env::VarError, error::Error as StdError};
 
 use axum::http::{HeaderMap, HeaderValue};
-use reqwest::Response;
 use tracing::{instrument, trace};
 
 pub mod teawie_archive;
 
-pub type HttpClient = reqwest::Client;
+pub type Client = reqwest::Client;
+pub type Response = reqwest::Response;
+pub type Error = reqwest::Error;
 
 pub trait HttpClientExt {
-	async fn get_request(&self, url: &str) -> Result<Response, reqwest::Error>;
+	async fn get_request(&self, url: &str) -> Result<Response, Error>;
 	fn default() -> Self;
 }
 
@@ -19,10 +20,10 @@ pub trait GitHubClient {
 		&self,
 		token: &str,
 		url: &str,
-	) -> Result<Response, Box<dyn Error + Send + Sync>>;
+	) -> Result<Response, Box<dyn StdError + Send + Sync>>;
 }
 
-impl HttpClientExt for HttpClient {
+impl HttpClientExt for Client {
 	fn default() -> Self {
 		reqwest::ClientBuilder::new()
 			.user_agent(format!(
@@ -34,7 +35,7 @@ impl HttpClientExt for HttpClient {
 	}
 
 	#[instrument(skip(self))]
-	async fn get_request(&self, url: &str) -> Result<Response, reqwest::Error> {
+	async fn get_request(&self, url: &str) -> Result<Response, Error> {
 		trace!("Making request to {url}");
 		let resp = self.get(url).send().await?;
 		resp.error_for_status_ref()?;
@@ -43,7 +44,7 @@ impl HttpClientExt for HttpClient {
 	}
 }
 
-impl GitHubClient for HttpClient {
+impl GitHubClient for Client {
 	fn token_from_env(&self) -> Result<String, VarError> {
 		std::env::var("GITHUB_TOKEN")
 	}
@@ -53,7 +54,7 @@ impl GitHubClient for HttpClient {
 		&self,
 		token: &str,
 		url: &str,
-	) -> Result<Response, Box<dyn Error + Send + Sync>> {
+	) -> Result<Response, Box<dyn StdError + Send + Sync>> {
 		trace!("Making authenticated request to {url}");
 		let mut headers = HeaderMap::new();
 		headers.insert(
