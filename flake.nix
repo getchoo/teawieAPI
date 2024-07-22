@@ -30,9 +30,12 @@
         {
           devShells.default = pkgs.mkShellNoCC {
             packages = with pkgs; [
+              # node
               nodejs_20
               corepack_20
+              nrr
 
+              # github actions
               actionlint
 
               self'.formatter
