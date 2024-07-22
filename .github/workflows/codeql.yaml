@@ -1,14 +1,14 @@
 name: CodeQL
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   codeql:
     name: Run CodeQL scan
-    runs-on: "ubuntu-latest"
+
+    runs-on: ubuntu-latest
 
     permissions:
       security-events: write
@@ -17,7 +17,8 @@ jobs:
       LANGUAGE: "javascript-typescript"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
