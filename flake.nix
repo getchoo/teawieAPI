@@ -29,13 +29,9 @@
         { self', pkgs, ... }:
         {
           devShells.default = pkgs.mkShellNoCC {
-            shellHook = ''
-              [ ! -d node_modules ] && pnpm install --frozen-lockfile
-            '';
-
             packages = with pkgs; [
               nodejs_20
-              (nodePackages_latest.pnpm.override { nodejs = nodejs_20; })
+              corepack_20
 
               actionlint
 
