@@ -34,6 +34,8 @@
               nodejs_20
               corepack_20
               nrr
+              typescript-language-server
+              vscode-langservers-extracted # for eslint server
 
               # github actions
               actionlint
