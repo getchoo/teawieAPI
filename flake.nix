@@ -7,15 +7,14 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
-    pre-commit = {
-      url = "github:cachix/pre-commit-hooks.nix";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
     };
   };
 
   outputs =
-    { parts, pre-commit, ... }@inputs:
+    { parts, treefmt-nix, ... }@inputs:
     parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -24,15 +23,14 @@
         "aarch64-darwin"
       ];
 
-      imports = [ pre-commit.flakeModule ];
+      imports = [ treefmt-nix.flakeModule ];
 
       perSystem =
-        { config, pkgs, ... }:
+        { self', pkgs, ... }:
         {
           devShells.default = pkgs.mkShellNoCC {
             shellHook = ''
               [ ! -d node_modules ] && pnpm install --frozen-lockfile
-              ${config.pre-commit.installationScript}
             '';
 
             packages = with pkgs; [
@@ -40,35 +38,22 @@
               (nodePackages_latest.pnpm.override { nodejs = nodejs_20; })
 
               actionlint
-              editorconfig-checker
 
-              config.formatter
-              deadnix
+              self'.formatter
               nil
               statix
             ];
           };
 
-          formatter = pkgs.nixfmt-rfc-style;
+          treefmt = {
+            projectRootFile = ".git/config";
 
-          pre-commit.settings = {
-            hooks = {
+            programs = {
               actionlint.enable = true;
-              editorconfig-checker.enable = true;
-
-              # typescript
-              eslint.enable = true;
-              prettier.enable = true;
-
-              # nix
-              ${config.formatter.pname}.enable = true;
               deadnix.enable = true;
-              nil.enable = true;
+              nixfmt.enable = true;
+              prettier.enable = true;
               statix.enable = true;
-            };
-
-            settings = {
-              eslint.extensions = "\\.(js|jsx|ts|tsx)$";
             };
           };
         };
