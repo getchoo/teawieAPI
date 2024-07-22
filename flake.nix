@@ -14,12 +14,9 @@
     };
   };
 
-  outputs = {
-    parts,
-    pre-commit,
-    ...
-  } @ inputs:
-    parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    { parts, pre-commit, ... }@inputs:
+    parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -27,55 +24,53 @@
         "aarch64-darwin"
       ];
 
-      imports = [pre-commit.flakeModule];
+      imports = [ pre-commit.flakeModule ];
 
-      perSystem = {
-        config,
-        pkgs,
-        ...
-      }: {
-        devShells.default = pkgs.mkShellNoCC {
-          shellHook = ''
-            [ ! -d node_modules ] && pnpm install --frozen-lockfile
-            ${config.pre-commit.installationScript}
-          '';
+      perSystem =
+        { config, pkgs, ... }:
+        {
+          devShells.default = pkgs.mkShellNoCC {
+            shellHook = ''
+              [ ! -d node_modules ] && pnpm install --frozen-lockfile
+              ${config.pre-commit.installationScript}
+            '';
 
-          packages = with pkgs; [
-            nodejs_20
-            (nodePackages_latest.pnpm.override {nodejs = nodejs_20;})
+            packages = with pkgs; [
+              nodejs_20
+              (nodePackages_latest.pnpm.override { nodejs = nodejs_20; })
 
-            actionlint
-            editorconfig-checker
+              actionlint
+              editorconfig-checker
 
-            config.formatter
-            deadnix
-            nil
-            statix
-          ];
-        };
-
-        formatter = pkgs.alejandra;
-
-        pre-commit.settings = {
-          hooks = {
-            actionlint.enable = true;
-            editorconfig-checker.enable = true;
-
-            # typescript
-            eslint.enable = true;
-            prettier.enable = true;
-
-            # nix
-            ${config.formatter.pname}.enable = true;
-            deadnix.enable = true;
-            nil.enable = true;
-            statix.enable = true;
+              config.formatter
+              deadnix
+              nil
+              statix
+            ];
           };
 
-          settings = {
-            eslint.extensions = "\\.(js|jsx|ts|tsx)$";
+          formatter = pkgs.nixfmt-rfc-style;
+
+          pre-commit.settings = {
+            hooks = {
+              actionlint.enable = true;
+              editorconfig-checker.enable = true;
+
+              # typescript
+              eslint.enable = true;
+              prettier.enable = true;
+
+              # nix
+              ${config.formatter.pname}.enable = true;
+              deadnix.enable = true;
+              nil.enable = true;
+              statix.enable = true;
+            };
+
+            settings = {
+              eslint.extensions = "\\.(js|jsx|ts|tsx)$";
+            };
           };
         };
-      };
     };
 }
