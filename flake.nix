@@ -33,6 +33,7 @@
               # node
               nodejs_20
               corepack_20
+              nodePackages.wrangler
               nrr
               typescript-language-server
               vscode-langservers-extracted # for eslint server
