@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+	"teawie-api",
+	"server",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Seth <getchoo at tuta dot io>"]
+edition = "2021"
+repository = "https://github.com/getchoo/teawieAPI"
+
+[workspace.dependencies]
+teawie-api = { path = "./teawie-api" }
+
+axum = { version = "0.7.5", features = ["json", "macros"] }
+log = "0.4.22"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+complexity = "warn"
+correctness = "deny"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "deny"

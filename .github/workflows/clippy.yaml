@@ -1,0 +1,60 @@
+name: Clippy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '**.rs'
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '**.rs'
+  workflow_dispatch:
+
+jobs:
+  clippy:
+    name: Run scan
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17 # master
+        with:
+          toolchain: stable
+          components: "clippy"
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2
+
+      - name: Install SARIF tools
+        run: |
+          cargo install clippy-sarif sarif-fmt
+
+      - name: Fetch Cargo deps
+        run: |
+          cargo fetch --locked
+
+      - name: Run Clippy
+        continue-on-error: true
+        run: |
+          cargo clippy \
+            --all-features \
+            --all-targets \
+            --message-format=json \
+          | clippy-sarif | tee /tmp/clippy.sarif | sarif-fmt
+
+      - name: Upload results
+        uses: github/codeql-action/upload-sarif@2d790406f505036ef40ecba973cc774a50395aac # v3
+        with:
+          sarif_file: /tmp/clippy.sarif
+          wait-for-processing: true

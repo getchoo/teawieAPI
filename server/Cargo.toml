@@ -1,0 +1,23 @@
+[package]
+name = "teawie-api-server"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+description = "Server binary for teawieAPI"
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "teawie-api"
+path = "src/main.rs"
+
+[dependencies]
+axum.workspace = true
+dotenvy = "0.15.7"
+env_logger = "0.11.3"
+log.workspace = true
+teawie-api.workspace = true
+tokio = { version = "1.38.0", features = ["macros", "net", "signal", "rt-multi-thread"] }
+
+[lints]
+workspace = true

@@ -1,54 +1,76 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "**.nix"
+      - "**.rs"
+      - "**.lock"
+      - "Cargo.toml"
   pull_request:
+    paths:
+      - "**.nix"
+      - "**.rs"
+      - "**.lock"
+      - "Cargo.toml"
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: "ubuntu-latest"
+    name: Build
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@21dc36fb71dd22e3317045c0c31a3f4249868b17 # master
         with:
-          submodules: recursive
+          toolchain: stable
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2
 
       - name: Run build
-        run: pnpm build
+        run: |
+          cargo build --locked --release
 
-  format:
-    runs-on: "ubuntu-latest"
+  nix:
+    name: Nix
+
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@ab6bcb2d5af0e904d04aea750e2089e9dc4cbfdd # v13
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+      - name: Setup Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@b46e247b898aa56e6d2d2e728dc6df6c84fdb738 # v7
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Run flake checks
+        run: |
+          nix flake check \
+            --all-systems \
+            --print-build-logs \
+            --show-trace
 
-      - name: Run Prettier
-        run: pnpm exec prettier --check .
+  release-gate:
+    name: CI Release gate
+    needs: [build, nix]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exit with error
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
