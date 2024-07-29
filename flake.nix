@@ -34,7 +34,7 @@
                 # node
                 nodejs_20
                 corepack_20
-                nodePackages.wrangler
+                wrangler
                 nrr
                 typescript-language-server
                 vscode-langservers-extracted # for eslint server
@@ -47,6 +47,11 @@
                 nil
                 statix
               ];
+
+              env = {
+                # https://github.com/NixOS/nixpkgs/pull/330808
+                SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+              };
             };
 
             ci = pkgs.mkShellNoCC {
