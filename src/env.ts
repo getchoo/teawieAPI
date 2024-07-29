@@ -1,6 +1,6 @@
 export type Bindings = {
-	ASSETS: Fetcher;
 	REDIRECT_ROOT?: string;
+	TEAWIE_API: KVNamespace;
 };
 
 export type Variables = Record<string, never>;

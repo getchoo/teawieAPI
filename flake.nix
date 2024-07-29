@@ -7,19 +7,15 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
-    pre-commit = {
-      url = "github:cachix/pre-commit-hooks.nix";
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
     };
   };
 
-  outputs = {
-    parts,
-    pre-commit,
-    ...
-  } @ inputs:
-    parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    { parts, treefmt-nix, ... }@inputs:
+    parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -27,55 +23,63 @@
         "aarch64-darwin"
       ];
 
-      imports = [pre-commit.flakeModule];
+      imports = [ treefmt-nix.flakeModule ];
 
-      perSystem = {
-        config,
-        pkgs,
-        ...
-      }: {
-        devShells.default = pkgs.mkShellNoCC {
-          shellHook = ''
-            [ ! -d node_modules ] && pnpm install --frozen-lockfile
-            ${config.pre-commit.installationScript}
-          '';
+      perSystem =
+        { self', pkgs, ... }:
+        {
+          devShells = {
+            default = pkgs.mkShellNoCC {
+              packages = with pkgs; [
+                # node
+                nodejs_20
+                corepack_20
+                wrangler
+                nrr
+                typescript-language-server
+                vscode-langservers-extracted # for eslint server
 
-          packages = with pkgs; [
-            nodejs_20
-            (nodePackages_latest.pnpm.override {nodejs = nodejs_20;})
+                # github actions
+                actionlint
 
-            actionlint
-            editorconfig-checker
+                # nix
+                self'.formatter
+                nil
+                statix
+              ];
 
-            config.formatter
-            deadnix
-            nil
-            statix
-          ];
-        };
+              env = {
+                # https://github.com/NixOS/nixpkgs/pull/330808
+                SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+              };
+            };
 
-        formatter = pkgs.alejandra;
+            ci = pkgs.mkShellNoCC {
+              shellHook = ''
+                corepack install
+              '';
 
-        pre-commit.settings = {
-          hooks = {
-            actionlint.enable = true;
-            editorconfig-checker.enable = true;
+              packages = with pkgs; [
+                nodejs_20
+                corepack_20
+                nrr
 
-            # typescript
-            eslint.enable = true;
-            prettier.enable = true;
-
-            # nix
-            ${config.formatter.pname}.enable = true;
-            deadnix.enable = true;
-            nil.enable = true;
-            statix.enable = true;
+                self'.formatter
+              ];
+            };
           };
 
-          settings = {
-            eslint.extensions = "\\.(js|jsx|ts|tsx)$";
+          treefmt = {
+            projectRootFile = ".git/config";
+
+            programs = {
+              actionlint.enable = true;
+              deadnix.enable = true;
+              nixfmt.enable = true;
+              prettier.enable = true;
+              statix.enable = true;
+            };
           };
         };
-      };
     };
 }
