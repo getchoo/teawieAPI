@@ -63,6 +63,8 @@
                 nodejs_20
                 corepack_20
                 nrr
+
+                self'.formatter
               ];
             };
           };
