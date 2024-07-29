@@ -28,23 +28,38 @@
       perSystem =
         { self', pkgs, ... }:
         {
-          devShells.default = pkgs.mkShellNoCC {
-            packages = with pkgs; [
-              # node
-              nodejs_20
-              corepack_20
-              nodePackages.wrangler
-              nrr
-              typescript-language-server
-              vscode-langservers-extracted # for eslint server
+          devShells = {
+            default = pkgs.mkShellNoCC {
+              packages = with pkgs; [
+                # node
+                nodejs_20
+                corepack_20
+                nodePackages.wrangler
+                nrr
+                typescript-language-server
+                vscode-langservers-extracted # for eslint server
 
-              # github actions
-              actionlint
+                # github actions
+                actionlint
 
-              self'.formatter
-              nil
-              statix
-            ];
+                # nix
+                self'.formatter
+                nil
+                statix
+              ];
+            };
+
+            ci = pkgs.mkShellNoCC {
+              shellHook = ''
+                corepack install
+              '';
+
+              packages = with pkgs; [
+                nodejs_20
+                corepack_20
+                nrr
+              ];
+            };
           };
 
           treefmt = {

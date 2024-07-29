@@ -27,12 +27,12 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v13
 
       - name: Install Dependencies
-        run: nix develop --command pnpm install --frozen-lockfile
+        run: nix develop .#ci --command pnpm install --frozen-lockfile
 
       - name: Run ESLint
         continue-on-error: true
         run: |
-          nix develop --command \
+          nix develop .#ci --command \
             nrr lint --format @microsoft/eslint-formatter-sarif --output-file /tmp/results.sarif
 
       - name: Upload Results

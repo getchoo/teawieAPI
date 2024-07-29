@@ -18,10 +18,10 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v13
 
       - name: Install Dependencies
-        run: nix develop --command pnpm install --frozen-lockfile
+        run: nix develop .#ci --command pnpm install --frozen-lockfile
 
       - name: Run build
-        run: nix develop --command nrr build
+        run: nix develop .#ci --command nrr build
 
   treefmt:
     name: Treefmt
@@ -37,4 +37,4 @@ jobs:
 
       - name: Run checks
         run: |
-          nix develop --command treefmt --fail-on-change
+          nix develop .#ci --command treefmt --fail-on-change
