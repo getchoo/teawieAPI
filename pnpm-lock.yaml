@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@hono/zod-openapi':
         specifier: ^0.15.1
-        version: 0.15.1(hono@4.5.2)(zod@3.23.8)
+        version: 0.15.1(hono@4.5.3)(zod@3.23.8)
       '@hono/zod-validator':
         specifier: ^0.2.2
-        version: 0.2.2(hono@4.5.2)(zod@3.23.8)
+        version: 0.2.2(hono@4.5.3)(zod@3.23.8)
       hono:
-        specifier: ^4.5.2
-        version: 4.5.2
+        specifier: ^4.5.3
+        version: 4.5.3
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -990,8 +990,8 @@ packages:
     resolution: {integrity: sha512-vUptKVTpIJhcczKBbgnS+RtcuYMB8+oNzPK2/Hp3hanz8JmpATdmmgLgSaadVREkDm+e2giHwY3ZRkyjSIDDFA==}
     engines: {node: '>= 0.4'}
 
-  hono@4.5.2:
-    resolution: {integrity: sha512-93P8XEALrHAUGRZoqXs8MDL3w9mDgRpbW9Sy5x4LS7srg78bKUw7EGynxze+Ft1e/rLGmDAbxeSTMu6dHUSRDw==}
+  hono@4.5.3:
+    resolution: {integrity: sha512-r26WwwbKD3BAYdfB294knNnegNda7VfV1tVn66D9Kvl9WQTdrR+5eKdoeaQNHQcC3Gr0KBikzAtjd6VsRGVSaw==}
     engines: {node: '>=16.0.0'}
 
   ignore@5.2.4:
@@ -1682,16 +1682,16 @@ snapshots:
 
   '@fastify/busboy@2.0.0': {}
 
-  '@hono/zod-openapi@0.15.1(hono@4.5.2)(zod@3.23.8)':
+  '@hono/zod-openapi@0.15.1(hono@4.5.3)(zod@3.23.8)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.1.1(zod@3.23.8)
-      '@hono/zod-validator': 0.2.2(hono@4.5.2)(zod@3.23.8)
-      hono: 4.5.2
+      '@hono/zod-validator': 0.2.2(hono@4.5.3)(zod@3.23.8)
+      hono: 4.5.3
       zod: 3.23.8
 
-  '@hono/zod-validator@0.2.2(hono@4.5.2)(zod@3.23.8)':
+  '@hono/zod-validator@0.2.2(hono@4.5.3)(zod@3.23.8)':
     dependencies:
-      hono: 4.5.2
+      hono: 4.5.3
       zod: 3.23.8
 
   '@humanwhocodes/config-array@0.11.14':
@@ -2241,7 +2241,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.5.2: {}
+  hono@4.5.3: {}
 
   ignore@5.2.4: {}
 
