@@ -1,4 +1,4 @@
-import { version } from "../package.json";
+import { USER_AGENT } from "./consts";
 import { Endpoints } from "@octokit/types";
 
 type repositoryPathContentsResponse =
@@ -27,7 +27,7 @@ const contentsOf = (
 	fetch(`${GITHUB_API}/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`, {
 		headers: {
 			accept: "application/vnd.github+json",
-			"user-agent": `teawieAPI/${version}`,
+			"user-agent": USER_AGENT,
 		},
 	})
 		.then((response) => {
