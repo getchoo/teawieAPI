@@ -1,5 +1,6 @@
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
+import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { VERSION } from "./consts";
 import { Bindings, Variables } from "./env";
@@ -18,6 +19,8 @@ app.use("*", prettyJSON());
 app.get("/", (c) =>
 	c.redirect(c.env.REDIRECT_ROOT ?? "https://github.com/getchoo/teawieAPI"),
 );
+
+app.get("/swagger", swaggerUI({ url: "/doc" }));
 
 app.doc("/doc", {
 	openapi: "3.0.0",
