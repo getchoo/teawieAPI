@@ -84,8 +84,6 @@ app.openapi(
 		),
 );
 
-app.get("/get_random_teawie", (c) => c.redirect("/random_teawie"));
-
 app.onError((error, c) => {
 	console.error(error);
 
