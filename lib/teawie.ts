@@ -1,5 +1,8 @@
-import { USER_AGENT } from "./consts";
+import { USER_AGENT } from "./consts.ts";
 import { Endpoints } from "@octokit/types";
+
+const URL_CACHE_KEY = ["urls"];
+const URL_CACHE_TTL_MS = 1000 * 60 * 60; // 1 hour
 
 type repositoryPathContentsResponse =
 	Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"];
@@ -58,7 +61,9 @@ const imageUrlsIn = (
 					!Array.isArray(file) &&
 					file.download_url &&
 					file.type == "file" &&
-					IMAGE_EXTENSIONS.includes(file.name.split(".").at(-1) ?? ""),
+					IMAGE_EXTENSIONS.includes(
+						file.name.split(".").at(-1) ?? "",
+					),
 			)
 			.map((file) => {
 				// Should this happen? No
@@ -75,24 +80,29 @@ const imageUrlsIn = (
 	);
 };
 
-export const imageUrls = async (kv: KVNamespace): Promise<string[]> => {
-	const cached = await kv.get("urls");
-	if (cached) {
+export const imageUrls = async (kv: Deno.Kv): Promise<string[]> => {
+	const cached = await kv.get(URL_CACHE_KEY);
+	const urls = cached.value;
+	if (typeof urls == "string") {
 		console.trace("Found Teawie URLs in cache!");
-		return JSON.parse(cached);
+		return JSON.parse(urls);
 	}
 
 	console.warn("Couldn't find Teawie URLs in cache! Fetching fresh ones");
-	const fresh = await Promise.all(SUBDIRS.map(contentsOf)).then((responses) => {
-		// See the note above
-		const flatResponses = responses.flatMap((response) =>
-			Array.isArray(response) ? response : [response],
-		);
+	const fresh = await Promise.all(SUBDIRS.map(contentsOf)).then(
+		(responses) => {
+			// See the note above
+			const flatResponses = responses.flatMap((response) =>
+				Array.isArray(response) ? response : [response]
+			);
 
-		return imageUrlsIn(flatResponses);
+			return imageUrlsIn(flatResponses);
+		},
+	);
+
+	await kv.set(URL_CACHE_KEY, JSON.stringify(fresh), {
+		expireIn: URL_CACHE_TTL_MS,
 	});
-
-	await kv.put("urls", JSON.stringify(fresh), { expirationTtl: 60 * 60 });
 
 	return fresh;
 };

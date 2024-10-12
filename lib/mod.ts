@@ -1,23 +1,30 @@
-import { logger } from "hono/logger";
-import { prettyJSON } from "hono/pretty-json";
+import { env } from "@hono/hono/adapter";
+import { logger } from "@hono/hono/logger";
+import { prettyJSON } from "@hono/hono/pretty-json";
 import { swaggerUI } from "@hono/swagger-ui";
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { VERSION } from "./consts";
-import { Bindings, Variables } from "./env";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { VERSION } from "./consts.ts";
 import {
 	ListTeawiesParams,
 	ListTeawiesResponse,
 	RandomTeawiesResponse,
-} from "./schemas";
-import { imageUrls } from "./teawie";
+} from "./schemas.ts";
+import { imageUrls } from "./teawie.ts";
 
-const app = new OpenAPIHono<{ Bindings: Bindings; Variables: Variables }>();
+const app = new OpenAPIHono();
 
 app.use("*", logger());
 app.use("*", prettyJSON());
 
-app.get("/", (c) =>
-	c.redirect(c.env.REDIRECT_ROOT ?? "https://github.com/getchoo/teawieAPI"),
+app.get(
+	"/",
+	(c) => {
+		const { REDIRECT_ROOT } = env<{ REDIRECT_ROOT: string | undefined }>(c);
+
+		return c.redirect(
+			REDIRECT_ROOT ?? "https://github.com/getchoo/teawieAPI",
+		);
+	},
 );
 
 app.get("/swagger", swaggerUI({ url: "/doc" }));
@@ -50,7 +57,8 @@ app.openapi(
 	}),
 	async (c) => {
 		const { limit } = c.req.query();
-		const urls = await imageUrls(c.env.TEAWIE_API);
+		const kv = await Deno.openKv();
+		const urls = await imageUrls(kv);
 
 		return c.json(
 			{
@@ -76,12 +84,15 @@ app.openapi(
 			},
 		},
 	}),
-	async (c) =>
-		imageUrls(c.env.TEAWIE_API).then((urls) =>
+	async (c) => {
+		const kv = await Deno.openKv();
+
+		return imageUrls(kv).then((urls) =>
 			c.json({
 				url: urls[Math.floor(Math.random() * urls.length)],
-			}),
-		),
+			})
+		);
+	},
 );
 
 app.onError((error, c) => {

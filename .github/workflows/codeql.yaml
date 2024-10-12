@@ -1,12 +1,20 @@
 name: CodeQL
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "**.ts"
+      - ".github/workflows/codeql.yaml"
   pull_request:
+    paths:
+      - "**.ts"
+      - ".github/workflows/codeql.yaml"
   workflow_dispatch:
 
 jobs:
   codeql:
-    name: Run CodeQL scan
+    name: Run scan
 
     runs-on: ubuntu-latest
 

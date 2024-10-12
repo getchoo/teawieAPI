@@ -1,0 +1,23 @@
+{
+	"tasks": {
+		"start": "deno run --allow-env --allow-net=:8000,api.github.com:443 ./main.ts",
+		"dev": "deno task start --watch",
+		"deployctl": "echo \"import '@deno/deployctl'\" | deno run --allow-env --allow-read --allow-write --allow-sys -"
+	},
+	"imports": {
+		"@deno/deployctl": "jsr:@deno/deployctl@^1.12.0",
+		"@hono/hono": "jsr:@hono/hono@^4.6.4",
+		"@hono/swagger-ui": "npm:@hono/swagger-ui@^0.4.1",
+		"@hono/zod-openapi": "npm:@hono/zod-openapi@^0.16.4",
+		"@hono/zod-validator": "npm:@hono/zod-validator@^0.4.1",
+		"@octokit/types": "npm:@octokit/types@^13.6.1",
+		"zod": "npm:zod@^3.23.8"
+	},
+	"fmt": {
+		"useTabs": true
+	},
+	"lock": {
+		"frozen": true
+	},
+	"unstable": ["kv"]
+}

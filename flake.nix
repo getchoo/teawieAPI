@@ -1,11 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
-
-    parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -14,72 +9,52 @@
   };
 
   outputs =
-    { parts, treefmt-nix, ... }@inputs:
-    parts.lib.mkFlake { inherit inputs; } {
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
+    {
+      self,
+      nixpkgs,
+      treefmt-nix,
+    }:
 
-      imports = [ treefmt-nix.flakeModule ];
+    let
+      inherit (nixpkgs) lib;
+      systems = lib.systems.flakeExposed;
 
-      perSystem =
-        { self', pkgs, ... }:
+      forAllSystems = lib.genAttrs systems;
+      nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
+      treefmtFor = forAllSystems (system: treefmt-nix.lib.evalModule nixpkgsFor.${system} ./treefmt.nix);
+    in
+    {
+      checks = forAllSystems (system: {
+        treefmt = treefmtFor.${system}.config.build.check self;
+      });
+
+      devShells = forAllSystems (
+        system:
+        let
+          pkgs = nixpkgsFor.${system};
+
+          basePackages = [
+            pkgs.deno
+          ];
+        in
         {
-          devShells = {
-            default = pkgs.mkShellNoCC {
-              packages = with pkgs; [
-                # node
-                nodejs_20
-                corepack_20
-                wrangler
-                nrr
-                typescript-language-server
-                vscode-langservers-extracted # for eslint server
+          default = pkgs.mkShellNoCC {
+            packages = basePackages ++ [
+              # CI Tools
+              pkgs.actionlint
 
-                # github actions
-                actionlint
-
-                # nix
-                self'.formatter
-                nil
-                statix
-              ];
-
-              env = {
-                # https://github.com/NixOS/nixpkgs/pull/330808
-                SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-              };
-            };
-
-            ci = pkgs.mkShellNoCC {
-              shellHook = ''
-                corepack install
-              '';
-
-              packages = with pkgs; [
-                nodejs_20
-                corepack_20
-                nrr
-
-                self'.formatter
-              ];
-            };
+              # Nix Tools
+              self.formatter.${system}
+              pkgs.deadnix
+              pkgs.nil
+              pkgs.statix
+            ];
           };
 
-          treefmt = {
-            projectRootFile = ".git/config";
+          ci = pkgs.mkShellNoCC { packages = basePackages; };
+        }
+      );
 
-            programs = {
-              actionlint.enable = true;
-              deadnix.enable = true;
-              nixfmt.enable = true;
-              prettier.enable = true;
-              statix.enable = true;
-            };
-          };
-        };
+      formatter = forAllSystems (system: treefmtFor.${system}.config.build.wrapper);
     };
 }
