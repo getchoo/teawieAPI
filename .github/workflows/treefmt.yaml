@@ -1,0 +1,30 @@
+name: Treefmt
+
+on:
+  pull_request:
+    paths:
+      - "**.lock"
+      - "**.nix"
+      - "**.ts"
+      - "package.json"
+      - "tsconfig.json"
+
+      - ".github/workflows/ci.yaml"
+  workflow_dispatch:
+
+jobs:
+  treefmt:
+    name: Run treefmt
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Run treefmt
+        run: |
+          nix fmt -- --ci

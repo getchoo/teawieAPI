@@ -3,7 +3,6 @@ import { prettyJSON } from "hono/pretty-json";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { VERSION } from "./consts";
-import { Bindings, Variables } from "./env";
 import {
 	ListTeawiesParams,
 	ListTeawiesResponse,
@@ -11,7 +10,11 @@ import {
 } from "./schemas";
 import { imageUrls } from "./teawie";
 
-const app = new OpenAPIHono<{ Bindings: Bindings; Variables: Variables }>();
+type Bindings = {
+	REDIRECT_ROOT?: string;
+	TEAWIE_API: KVNamespace;
+};
+const app = new OpenAPIHono<{ Bindings: Bindings }>();
 
 app.use("*", logger());
 app.use("*", prettyJSON());
