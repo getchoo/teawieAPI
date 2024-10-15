@@ -6,7 +6,7 @@ on:
 
 jobs:
   codeql:
-    name: Run CodeQL scan
+    name: Run scan
 
     runs-on: ubuntu-latest
 
