@@ -10,16 +10,16 @@ importers:
     dependencies:
       '@hono/swagger-ui':
         specifier: ^0.5.0
-        version: 0.5.0(hono@4.6.14)
+        version: 0.5.0(hono@4.6.15)
       '@hono/zod-openapi':
         specifier: ^0.18.3
-        version: 0.18.3(hono@4.6.14)(zod@3.23.8)
+        version: 0.18.3(hono@4.6.15)(zod@3.23.8)
       '@hono/zod-validator':
         specifier: ^0.4.2
-        version: 0.4.2(hono@4.6.14)(zod@3.23.8)
+        version: 0.4.2(hono@4.6.15)(zod@3.23.8)
       hono:
-        specifier: ^4.6.14
-        version: 4.6.14
+        specifier: ^4.6.15
+        version: 4.6.15
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -994,8 +994,8 @@ packages:
     resolution: {integrity: sha512-vUptKVTpIJhcczKBbgnS+RtcuYMB8+oNzPK2/Hp3hanz8JmpATdmmgLgSaadVREkDm+e2giHwY3ZRkyjSIDDFA==}
     engines: {node: '>= 0.4'}
 
-  hono@4.6.14:
-    resolution: {integrity: sha512-j4VkyUp2xazGJ8eCCLN1Vm/bxdvm/j5ZuU9AIjLu9vapn2M44p9L3Ktr9Vnb2RN2QtcR/wVjZVMlT5k7GJQgPw==}
+  hono@4.6.15:
+    resolution: {integrity: sha512-OiQwvAOAaI2JrABBH69z5rsctHDzFzIKJge0nYXgtzGJ0KftwLWcBXm1upJC23/omNRtnqM0gjRMbtXshPdqhQ==}
     engines: {node: '>=16.9.0'}
 
   ignore@5.2.4:
@@ -1682,20 +1682,20 @@ snapshots:
 
   '@fastify/busboy@2.0.0': {}
 
-  '@hono/swagger-ui@0.5.0(hono@4.6.14)':
+  '@hono/swagger-ui@0.5.0(hono@4.6.15)':
     dependencies:
-      hono: 4.6.14
+      hono: 4.6.15
 
-  '@hono/zod-openapi@0.18.3(hono@4.6.14)(zod@3.23.8)':
+  '@hono/zod-openapi@0.18.3(hono@4.6.15)(zod@3.23.8)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 7.1.1(zod@3.23.8)
-      '@hono/zod-validator': 0.4.2(hono@4.6.14)(zod@3.23.8)
-      hono: 4.6.14
+      '@hono/zod-validator': 0.4.2(hono@4.6.15)(zod@3.23.8)
+      hono: 4.6.15
       zod: 3.23.8
 
-  '@hono/zod-validator@0.4.2(hono@4.6.14)(zod@3.23.8)':
+  '@hono/zod-validator@0.4.2(hono@4.6.15)(zod@3.23.8)':
     dependencies:
-      hono: 4.6.14
+      hono: 4.6.15
       zod: 3.23.8
 
   '@humanwhocodes/config-array@0.13.0':
@@ -2225,7 +2225,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.6.14: {}
+  hono@4.6.15: {}
 
   ignore@5.2.4: {}
 
