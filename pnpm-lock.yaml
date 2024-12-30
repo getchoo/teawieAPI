@@ -13,16 +13,16 @@ importers:
         version: 0.5.0(hono@4.6.15)
       '@hono/zod-openapi':
         specifier: ^0.18.3
-        version: 0.18.3(hono@4.6.15)(zod@3.23.8)
+        version: 0.18.3(hono@4.6.15)(zod@3.24.1)
       '@hono/zod-validator':
         specifier: ^0.4.2
-        version: 0.4.2(hono@4.6.15)(zod@3.23.8)
+        version: 0.4.2(hono@4.6.15)(zod@3.24.1)
       hono:
         specifier: ^4.6.15
         version: 4.6.15
       zod:
-        specifier: ^3.23.8
-        version: 3.23.8
+        specifier: ^3.24.1
+        version: 3.24.1
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^4.20241218.0
@@ -1401,17 +1401,17 @@ packages:
   youch@3.3.3:
     resolution: {integrity: sha512-qSFXUk3UZBLfggAW3dJKg0BMblG5biqSF8M34E06o5CSsZtH92u9Hqmj2RzGiHDi64fhe83+4tENFP2DB6t6ZA==}
 
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+  zod@3.24.1:
+    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
 
 snapshots:
 
   '@aashutoshrathi/word-wrap@1.2.6': {}
 
-  '@asteasolutions/zod-to-openapi@7.1.1(zod@3.23.8)':
+  '@asteasolutions/zod-to-openapi@7.1.1(zod@3.24.1)':
     dependencies:
       openapi3-ts: 4.3.3
-      zod: 3.23.8
+      zod: 3.24.1
 
   '@cloudflare/kv-asset-handler@0.3.4':
     dependencies:
@@ -1435,7 +1435,7 @@ snapshots:
   '@cloudflare/workers-shared@0.9.1':
     dependencies:
       mime: 3.0.0
-      zod: 3.23.8
+      zod: 3.24.1
 
   '@cloudflare/workers-types@4.20241218.0': {}
 
@@ -1695,17 +1695,17 @@ snapshots:
     dependencies:
       hono: 4.6.15
 
-  '@hono/zod-openapi@0.18.3(hono@4.6.15)(zod@3.23.8)':
+  '@hono/zod-openapi@0.18.3(hono@4.6.15)(zod@3.24.1)':
     dependencies:
-      '@asteasolutions/zod-to-openapi': 7.1.1(zod@3.23.8)
-      '@hono/zod-validator': 0.4.2(hono@4.6.15)(zod@3.23.8)
+      '@asteasolutions/zod-to-openapi': 7.1.1(zod@3.24.1)
+      '@hono/zod-validator': 0.4.2(hono@4.6.15)(zod@3.24.1)
       hono: 4.6.15
-      zod: 3.23.8
+      zod: 3.24.1
 
-  '@hono/zod-validator@0.4.2(hono@4.6.15)(zod@3.23.8)':
+  '@hono/zod-validator@0.4.2(hono@4.6.15)(zod@3.24.1)':
     dependencies:
       hono: 4.6.15
-      zod: 3.23.8
+      zod: 3.24.1
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -2330,7 +2330,7 @@ snapshots:
       workerd: 1.20241106.2
       ws: 8.18.0
       youch: 3.3.3
-      zod: 3.23.8
+      zod: 3.24.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -2593,4 +2593,4 @@ snapshots:
       mustache: 4.2.0
       stacktracey: 2.1.8
 
-  zod@3.23.8: {}
+  zod@3.24.1: {}
